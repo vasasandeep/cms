@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  
+management:
+  newrelic:
+    metrics:
+      export:
+        enabled: true
+        meter-name-event-type-enabled: true
+        client-provider-type: insights-agent
+        
+spring:
+  application:
+    name: cms-${ENV:unknown}
+    
+---
+spring.boot.admin.client:
+  enabled: ${SPRING_ADMIN_ENABLED:false}
+  auto-deregistration: true
+  url: ${SPRING_ADMIN_URL}
+  instance:
+    service-host-type: ip
+    metadata:
+      swagger: ${SWAGGER_URL:unknown}
+      tags:
+        env: ${ENV}
+        pod: ${HOSTNAME}

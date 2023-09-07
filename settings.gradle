@@ -1,0 +1,7 @@
+pluginManagement {
+	repositories {
+		maven { url 'https://artifactory.ae.com/artifactory/libs-release/' }
+		gradlePluginPortal()
+	}
+}
+rootProject.name = 'cms'

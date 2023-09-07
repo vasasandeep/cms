@@ -1,0 +1,137 @@
+buildscript {
+	repositories {
+		maven { url 'https://artifactory.ae.com/artifactory/libs-release/' }
+	}
+	dependencies {
+		classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.0.10'
+		classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3'
+		classpath 'com.google.guava:guava'
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0.10'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'eclipse'
+	id 'idea'
+	id 'com.google.cloud.tools.jib' version '3.2.1'
+	id 'org.sonarqube' version '3.3'
+	id 'jacoco'
+	id 'checkstyle'
+}
+
+group = 'com.aeo'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	maven { url 'https://artifactory.ae.com/artifactory/libs-release/' }
+}
+
+ext {
+	set('snakeyaml.version', "2.0")
+	set('springCloudGcpVersion', "4.3.0")
+	set('springCloudVersion', "2022.0.2")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.aeo:logging-spring-boot:2.0.0'
+	implementation 'com.aeo.jsonapi:spring-json-api:2.0.0'
+	implementation 'com.google.cloud:spring-cloud-gcp-starter'
+	implementation 'com.google.cloud.sql:postgres-socket-factory'
+	implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
+	implementation 'jakarta.servlet:jakarta.servlet-api'
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api'
+	implementation 'org.apache.httpcomponents.client5:httpclient5'
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'org.postgresql:postgresql'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+	implementation 'org.springframework.cloud:spring-cloud-starter'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testImplementation 'org.mockito:mockito-inline'
+	testImplementation 'org.mockito:mockito-junit-jupiter'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat = 'full'
+	}
+	afterSuite {
+		desc, result ->
+		if (!desc.parent) {
+			println "Results: (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+			boolean skipTests = Boolean.parseBoolean(project.findProperty('SKIP_TESTS') ?: "false")
+			if (result.testCount == 0 && !skipTests) {
+				throw new IllegalStateException("No tests were found. Failing the build")
+			}
+		}
+	}
+}
+
+tasks.named('jacocoTestReport') {
+	reports {
+		xml.required = true
+		csv.required = false
+		html.destination = file("${buildDir}/reports/code-coverage")
+	}
+}
+
+jib {
+	container {
+		mainClass 'com.aeo.cms.CmsApplication'
+		user '10000:10000'
+		labels = [pillar:'aeo-cloud-pillar']
+		jvmFlags = ['-XX:NewRatio=1']
+	}
+	from {
+		image "us-east4-docker.pkg.dev/aeo-gke-terraform-f793/aeo-base-images/temurin-17-slim:latest"
+	}
+}
+
+springBoot {
+	buildInfo {
+		version = System.getenv('BUILD_NAME') ?: project.findProperty('version')
+	}
+}
+
+sonarqube {
+	properties {
+		property "sonar.projectKey", "MSAT-CMS"
+		property "sonar.projectName", "Cms Application"
+		property "sonar.projectVersion", "1.0"
+		property "sonar.sourceEncoding", "iso-8859-1"
+		property "sonar.coverage.exclusions", "**/model/*,**/model/**,**/config/*,**/config/**,**/*Application.java"
+		property "sonar.sources", "src/main/java"
+		property "sonar.test.exclusions", "src/generatedContract/**/*,src/test/java/**/*"
+		property "sonar.exclusions", "src/test/java/**/*,**/config/**"
+		property "sonar.cpd.exclusions", "**/model/*,**/model/**,**/config/*,**/config/**"
+		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+		property "sonar.login", "admin"
+		property "sonar.password", "admin123"
+	}
+}
+

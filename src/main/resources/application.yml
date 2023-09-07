@@ -1,0 +1,60 @@
+server:
+  max-http-request-header-size: 64KB
+
+management:
+  newrelic:
+    metrics:
+      export:
+        enabled: false
+  endpoint:
+    health:
+      show-details: always
+    loggers:
+      enabled: true
+    env:
+      post:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+aeo-logging:
+  exclude-routes:
+    - 'actuator'
+    - 'favicon'
+    - 'swagger'
+    - 'api-docs'
+    
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    path: /swagger-ui
+    urls: 
+    - name: api-docs
+      url: /v3/api-docs
+      display-name: API Doc
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+#  packages-to-scan:
+
+spring:
+  banner:
+    location: classpath:static/banner.txt
+  application:
+    name: cms
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          enabled: true
+          
+---
+spring:
+  boot:
+    admin:
+      client:
+        enabled: false
