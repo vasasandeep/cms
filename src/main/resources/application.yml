@@ -51,10 +51,31 @@ spring:
       httpclient:
         hc5:
           enabled: true
-          
----
-spring:
-  boot:
-    admin:
-      client:
+    gcp:
+      core:
         enabled: false
+      sql:
+        enabled: false
+  sql:
+    init:
+      mode: never
+      platform: postgres
+  jpa:
+    database: postgresql
+    open-in-view: false
+    show-sql: true
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.lob.non_contextual_creation: true
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-local.xml
+  datasource:
+    initialization-mode: embedded
+    url: jdbc:postgresql://localhost:5432/cms-app
+    username: postgres
+    password: pgAdmin@123
+

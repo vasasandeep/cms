@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="init_database_grants_1" author="database">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="propertyeditor"/>
+                <tableExists tableName="ContentTypeBasicProperties"/>
+                <tableExists tableName="ContentTypeCustomProperties"/>
+            </and>
+        </preConditions>
+        <sql splitStatements="true" stripComments="true">
+            GRANT ALL ON propertyeditor TO current_user;
+            GRANT ALL ON ContentTypeBasicProperties TO current_user;
+            GRANT ALL ON ContentTypeCustomProperties TO current_user;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

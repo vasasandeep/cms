@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="init_setup" author="database">
+        <sql splitStatements="true" stripComments="true">
+
+            CREATE TABLE IF NOT EXISTS  ContentTypeMetadata
+            (
+                id varchar NOT NULL,
+                type varchar,
+                PropertyEditor varchar,
+                isReadOnly varchar,
+                CONSTRAINT ContentTypeMetadata_pk PRIMARY KEY (id)
+            );
+
+            CREATE INDEX IF NOT EXISTS ContentTypeMetadata_id_pk
+                ON ContentTypeMetadata USING btree (id);
+
+            CREATE TABLE IF NOT EXISTS ContentTypeCustomProperties
+            (
+                contenttypeId varchar NOT NULL,
+                FieldSequence varchar,
+                FieldName varchar,
+                FieldEditor varchar,
+                isRequired boolean,
+                isMultiple boolean,
+                CONSTRAINT ContentTypeCustomProperties_fk FOREIGN KEY (contenttypeId) REFERENCES ContentTypeMetadata(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS ContentTypeCustomProperties_id_pk
+            ON ContentTypeCustomProperties USING btree (contenttypeId);
+
+            CREATE TABLE IF NOT EXISTS  propertyeditor
+            (
+                id varchar NOT NULL,
+                type varchar,
+                editor varchar,
+                is_multiple_applicable varchar,
+                CONSTRAINT propertyeditor_pk PRIMARY KEY (id)
+            );
+
+            CREATE INDEX IF NOT EXISTS  propertyeditor_id_pk
+                ON propertyeditor USING btree (id);
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>
