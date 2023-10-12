@@ -22,12 +22,14 @@
 
             CREATE TABLE IF NOT EXISTS ContentTypeCustomProperties
             (
+                id varchar NOT NULL,
                 contenttypeId varchar NOT NULL,
                 FieldSequence varchar,
                 FieldName varchar,
                 FieldEditor varchar,
                 isRequired boolean,
                 isMultiple boolean,
+                CONSTRAINT ContentTypeCustomProperties_pk PRIMARY KEY (id),
                 CONSTRAINT ContentTypeCustomProperties_fk FOREIGN KEY (contenttypeId) REFERENCES ContentTypeMetadata(id)
             );
 
